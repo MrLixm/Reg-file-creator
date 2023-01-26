@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "reg-file-creator"
+version = "0.1.0"
+description = ""
+authors = ["Liam Collod <lcollod@gmail.com>"]
+readme = "README.md"
+packages = [{include = "reg_file_creator"}]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+
+[tool.poetry.group.dev.dependencies]
+black = "*"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
