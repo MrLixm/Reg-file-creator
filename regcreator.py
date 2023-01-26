@@ -1,3 +1,4 @@
+from __future__ import annotations
 import os
 import logging
 
@@ -7,18 +8,24 @@ class RegKey:
     key_index = 0
 
     def __init__(
-        self, key_name, key_muiv, key_icon=None, key_command=None, parent=None
+        self,
+        key_name: str,
+        key_muiv: str,
+        key_icon: str = None,
+        key_command: str = None,
+        parent: RegKey | None = None,
     ):
-        r""" Utility to define the aspect of a windows registery key
+        r"""
+        Utility to define the aspect of a windows registery key
 
         If key_command is None the key is assumed to be the root for subkeys
 
         Args:
-            key_name(str): name of the key in the registery editor
-            key_muiv(str): pretty name to be displayed on the context menu
-            key_icon(str): path to the icons, think to escape \ to \\
-            key_command(str): command to register in the key
-            parent(RegKey, optional): parent this key is the child of.
+            key_name: name of the key in the registery editor
+            key_muiv: pretty name to be displayed on the context menu
+            key_icon: path to the icons, think to escape \ to \\
+            key_command: command to register in the key
+            parent: parent this key is the child of.
         """
         self.parent = parent
         if parent:
@@ -31,16 +38,13 @@ class RegKey:
         self.key_icon = key_icon
         self.key_command = key_command
 
-    def write(self, reg_str, key_path):
+    def write(self, reg_str: str, key_path: str) -> str:
         r"""
 
         Args:
-            reg_str(str): string holding the current reg data and to add the keys data to
-            key_path(str): root path of the key in the registery editor
+            reg_str: string holding the current reg data and to add the keys data to
+            key_path: root path of the key in the registery editor
                 ex: HKEY_CLASSES_ROOT\SystemFileAssociations\.exr
-
-        Returns:
-
         """
         if self.parent:
             if self.parent.parent:
@@ -78,16 +82,16 @@ class RegKey:
         return reg_str
 
 
-def create_reg(reg_file_path, delete_keys=False):
-    """Create the reg file at the given location
+def create_reg(reg_file_path: str, delete_keys: bool = False) -> str:
+    """
+    Create the reg file at the given location
 
     Args:
-        delete_keys(bool): True to delete the keys instead of creating them (will add - in front of the keys in the reg file)
-        reg_file_path(str): path where the .reg file should be created
+        reg_file_path: path where the .reg file should be created
+        delete_keys: True to delete the keys instead of creating them (will add - in front of the keys in the reg file)
 
     Returns:
-        str: path to the created reg file
-
+        path to the created reg file
     """
     if delete_keys:
         keys_remove = "-"
