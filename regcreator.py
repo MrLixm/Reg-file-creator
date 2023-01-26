@@ -2,6 +2,8 @@ from __future__ import annotations
 import os
 import logging
 
+logger = logging.getLogger(__name__)
+
 
 class RegKey:
 
@@ -163,7 +165,7 @@ def create_reg(reg_file_path: str, delete_keys: bool = False) -> str:
         reg.write(reg_final_data)
 
     if os.path.exists(reg_file_path):
-        logging.info(f"Reg file created at: {reg_file_path}")
+        logger.info(f"Reg file created at: {reg_file_path}")
         return reg_file_path
     else:
         raise RuntimeError("Reg file not created")
