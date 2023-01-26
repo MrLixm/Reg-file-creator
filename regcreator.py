@@ -1,4 +1,3 @@
-
 import os
 import logging
 
@@ -7,7 +6,9 @@ class RegKey:
 
     key_index = 0
 
-    def __init__(self, key_name, key_muiv, key_icon=None, key_command=None, parent=None):
+    def __init__(
+        self, key_name, key_muiv, key_icon=None, key_command=None, parent=None
+    ):
         r""" Utility to define the aspect of a windows registery key
 
         If key_command is None the key is assumed to be the root for subkeys
@@ -43,7 +44,9 @@ class RegKey:
         """
         if self.parent:
             if self.parent.parent:
-                key_end = r"{}\shell\{}\shell\{}".format(self.parent.parent.key_name, self.parent.key_name, self.key_name)
+                key_end = r"{}\shell\{}\shell\{}".format(
+                    self.parent.parent.key_name, self.parent.key_name, self.key_name
+                )
             else:
                 key_end = r"{}\shell\{}".format(self.parent.key_name, self.key_name)
         else:  # Means this is a root key
@@ -57,21 +60,26 @@ class RegKey:
 "icon" = "{self.key_icon}" 
             """
 
-        if not self.key_command:  # if no command it means the key is the root for subkeys
+        if (
+            not self.key_command
+        ):  # if no command it means the key is the root for subkeys
             data_base += rf"""
 "subCommands"=""
 """
         else:
-            data_base += "\n" + rf"""[{key_path}\shell\{key_end}\command]
+            data_base += (
+                "\n"
+                + rf"""[{key_path}\shell\{key_end}\command]
 @="{self.key_command}"
             """
+            )
 
         reg_str += data_base + "\n"
         return reg_str
 
 
 def create_reg(reg_file_path, delete_keys=False):
-    """ Create the reg file at the given location
+    """Create the reg file at the given location
 
     Args:
         delete_keys(bool): True to delete the keys instead of creating them (will add - in front of the keys in the reg file)
@@ -113,9 +121,12 @@ def create_reg(reg_file_path, delete_keys=False):
 
     # ------------------------------------------------------------------------------------------------------------------
     # Create first keys
-    fromagebuy_key = RegKey("fromage_buy", "Buy Fromage",
-                            key_command=r"\"E:/app/app.exe\"  \"%1\" buy_fromage",
-                            parent=root_key_fromage)
+    fromagebuy_key = RegKey(
+        "fromage_buy",
+        "Buy Fromage",
+        key_command=r"\"E:/app/app.exe\"  \"%1\" buy_fromage",
+        parent=root_key_fromage,
+    )
     reg_final_data = fromagebuy_key.write(reg_final_data, key_base_path)
 
     baguette01_key = RegKey("baguette_01", "Baguette 01", parent=root_key_baguette)
@@ -126,19 +137,25 @@ def create_reg(reg_file_path, delete_keys=False):
 
     # Baguette sub-key
     # ------------------------------------------------------------------------------------------------------------------
-    eat_baguette = RegKey("eat_baguette", "Eat the baguette",
-                          key_command=r"\"E:/app/app.exe\"  \"%1\" baguette_arg",
-                          parent=baguette01_key)
+    eat_baguette = RegKey(
+        "eat_baguette",
+        "Eat the baguette",
+        key_command=r"\"E:/app/app.exe\"  \"%1\" baguette_arg",
+        parent=baguette01_key,
+    )
     reg_final_data = eat_baguette.write(reg_final_data, key_base_path)
 
-    destroy_baguette = RegKey("destroy_baguette", "Destroy the baguette",
-                              key_command=r"\"E:/app/app.exe\"  \"%1\" baguette_destroy",
-                              parent=baguette01_key)
+    destroy_baguette = RegKey(
+        "destroy_baguette",
+        "Destroy the baguette",
+        key_command=r"\"E:/app/app.exe\"  \"%1\" baguette_destroy",
+        parent=baguette01_key,
+    )
     reg_final_data = destroy_baguette.write(reg_final_data, key_base_path)
 
     """ Write the .reg file"""
 
-    with open(reg_file_path, 'w+') as reg:
+    with open(reg_file_path, "w+") as reg:
         reg.write(reg_final_data)
 
     if os.path.exists(reg_file_path):
