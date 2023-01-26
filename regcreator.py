@@ -1,6 +1,8 @@
 from __future__ import annotations
-import os
+
 import logging
+from pathlib import Path
+
 
 logger = logging.getLogger(__name__)
 
@@ -13,8 +15,8 @@ class RegKey:
         self,
         key_name: str,
         key_muiv: str,
-        key_icon: str = None,
-        key_command: str = None,
+        key_icon: str | None = None,
+        key_command: str | None = None,
         parent: RegKey | None = None,
     ):
         r"""
@@ -30,12 +32,17 @@ class RegKey:
             parent: parent this key is the child of.
         """
         self.parent = parent
+
         if parent:
+
             RegKey.key_index += 1
             self.key_name = f"{str(RegKey.key_index).zfill(3)}{key_name}"
+
         else:
+
             RegKey.key_index = 0
             self.key_name = f"{key_name}"
+
         self.key_muiv = key_muiv
         self.key_icon = key_icon
         self.key_command = key_command
@@ -49,30 +56,38 @@ class RegKey:
                 ex: HKEY_CLASSES_ROOT\SystemFileAssociations\.exr
         """
         if self.parent:
+
             if self.parent.parent:
+
                 key_end = r"{}\shell\{}\shell\{}".format(
                     self.parent.parent.key_name, self.parent.key_name, self.key_name
                 )
+
             else:
+
                 key_end = r"{}\shell\{}".format(self.parent.key_name, self.key_name)
-        else:  # Means this is a root key
+
+        # Means this is a root key
+        else:
+
             key_end = r"{}".format(self.key_name)
 
         data_base = rf"""[{key_path}\shell\{key_end}]
 "MUIVerb" = "{self.key_muiv}" """
 
         if self.key_icon:
+
             data_base += rf"""
 "icon" = "{self.key_icon}" 
             """
+        # if no command it means the key is the root for subkeys
+        if not self.key_command:
 
-        if (
-            not self.key_command
-        ):  # if no command it means the key is the root for subkeys
             data_base += rf"""
 "subCommands"=""
 """
         else:
+
             data_base += (
                 "\n"
                 + rf"""[{key_path}\shell\{key_end}\command]
@@ -84,7 +99,7 @@ class RegKey:
         return reg_str
 
 
-def create_reg(reg_file_path: str, delete_keys: bool = False) -> str:
+def create_reg(reg_file_path: Path, delete_keys: bool = False) -> str:
     """
     Create the reg file at the given location
 
@@ -161,11 +176,8 @@ def create_reg(reg_file_path: str, delete_keys: bool = False) -> str:
 
     """ Write the .reg file"""
 
-    with open(reg_file_path, "w+") as reg:
-        reg.write(reg_final_data)
+    logger.info(f"writing {reg_file_path} ...")
+    reg_file_path.write_text(reg_final_data)
 
-    if os.path.exists(reg_file_path):
-        logger.info(f"Reg file created at: {reg_file_path}")
-        return reg_file_path
-    else:
-        raise RuntimeError("Reg file not created")
+    if not reg_file_path.exists():
+        raise RuntimeError(f"Reg File <{reg_file_path}> not created")
