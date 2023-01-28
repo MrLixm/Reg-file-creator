@@ -10,13 +10,26 @@ logger = logging.getLogger(__name__)
 
 
 class BaseRegKey(abc.ABC):
+    def __init__(self):
+        self._removing = False
+
     @abc.abstractproperty
     def key_path(self) -> Path:
         pass
 
+    def set_removing(self, removing: bool):
+        """
+        Configure if the key should be added or removed from the registery.
+
+        Args:
+            removing: True so the key is removed of the registery.
+        """
+        self._removing = removing
+
 
 class RootRegKey(BaseRegKey):
     def __init__(self, key_path: Path):
+        super().__init__()
         self._key_path = key_path
 
     @property
@@ -48,7 +61,7 @@ class RegKey(BaseRegKey):
             icon: path to the icons
             command: command to register in the key
         """
-        self.parent = parent
+        super().__init__()
 
         if isinstance(parent, RootRegKey):
 
@@ -60,6 +73,7 @@ class RegKey(BaseRegKey):
             RegKey.key_index += 1
             self.key_name = f"{str(RegKey.key_index).zfill(3)}{name}"
 
+        self.parent = parent
         self.key_muiv = pretty_name
         self.icon_path = icon
         self.key_command = command
@@ -68,15 +82,16 @@ class RegKey(BaseRegKey):
         """
         Get the full key representation as a writable to disk string.
         """
+        remove_prefix = "-" if self._removing else ""
 
-        out_str = f"[{self.key_path}]\n"
+        out_str = f"[{remove_prefix}{self.key_path}]\n"
 
-        out_str += f'"MUIVerb" = "{self.key_muiv}"\n'
+        out_str += f'"MUIVerb"="{self.key_muiv}"\n'
         if self.icon_path:
-            out_str += f'"icon" = "{repr(str(self.icon_path))[1:][:-1]}"\n'
+            out_str += f'"icon"="{repr(str(self.icon_path))[1:][:-1]}"\n'
 
         if self.key_command:
-            out_str += f'[{self.key_path / "command"}]\n'
+            out_str += f'[{remove_prefix}{self.key_path / "command"}]\n'
             out_str += f'@="{self.key_command}"\n'
 
         # if no command it means the key is the root for subkeys
@@ -97,7 +112,7 @@ class RegFile:
 
     def __init__(self):
         self._comments_header: list[str] = []
-        self._reg_keys_list = []
+        self._reg_keys_list: list[BaseRegKey] = []
 
     def add_regkey(self, reg_key: RegKey):
         self._reg_keys_list.append(reg_key)
@@ -122,6 +137,16 @@ class RegFile:
             comment: message to add as comment in the header of the file.
         """
         return self._comments_header.append(comment)
+
+    def set_removing(self, removing: bool):
+        """
+        Configure if the keys should be added or removed from the registery.
+
+        Args:
+            removing: True so the keys are removed of the registery.
+        """
+        for reg_key in self._reg_keys_list:
+            reg_key.set_removing(removing)
 
     def write_to(self, export_path: Path):
         """
