@@ -29,16 +29,23 @@ def get_regkeys(regkey_data: dict[str, dict], parent: BaseRegKey) -> list[RegKey
         if icon:
             icon = Path(icon)
 
+        command = top_key_data.get("command")
+
         top_regkey = RegKey(
             name=top_key_name,
             pretty_name=top_key_data["name"],
             parent=parent,
             icon=icon,
-            command=top_key_data.get("command"),
+            command=command,
         )
         regkeys.append(top_regkey)
         children = top_key_data.get("children")
-        if children:
+        if children and command:
+            raise ValueError(
+                f"Error while parsing key <{top_key_name}>: "
+                f'the key is defining both "children" and "command".'
+            )
+        elif children:
             regkeys.extend(get_regkeys(children, parent=top_regkey))
 
     return regkeys
