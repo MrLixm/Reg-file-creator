@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "reg-file-creator"
-version = "2.0.0"
+version = "2.0.1"
 description = "Python package to create context-menu entries in windows via .reg file."
 authors = ["Liam Collod <lcollod@gmail.com>"]
 readme = "README.md"
