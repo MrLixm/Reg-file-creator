@@ -27,7 +27,7 @@ class BaseRegKey(abc.ABC):
         self._removing = removing
 
 
-class RootRegKey(BaseRegKey):
+class RegRootKey(BaseRegKey):
     def __init__(self, key_path: Path):
         super().__init__()
         self._key_path = key_path
@@ -63,7 +63,7 @@ class RegKey(BaseRegKey):
         """
         super().__init__()
 
-        if isinstance(parent, RootRegKey):
+        if isinstance(parent, RegRootKey):
 
             RegKey.key_index = 0
             self.key_name = f"{name}"

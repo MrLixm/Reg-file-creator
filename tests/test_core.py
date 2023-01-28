@@ -14,7 +14,7 @@ def testcase01() -> regcreator.core.RegFile:
     reg_file = regcreator.core.RegFile()
 
     # define the locations of all the key, in this exemple we are going to associate them to the exr file format
-    root_key = regcreator.core.RootRegKey(
+    root_key = regcreator.core.RegRootKey(
         Path("HKEY_CLASSES_ROOT\\SystemFileAssociations\\.exr")
     )
 
