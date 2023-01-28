@@ -1,23 +1,40 @@
 from __future__ import annotations
 
+import abc
 import logging
 from pathlib import Path
 
+import regcreator
 
 logger = logging.getLogger(__name__)
 
 
-class RegKey:
+class BaseRegKey(abc.ABC):
+    @abc.abstractproperty
+    def key_path(self) -> Path:
+        pass
+
+
+class RootRegKey(BaseRegKey):
+    def __init__(self, key_path: Path):
+        self._key_path = key_path
+
+    @property
+    def key_path(self) -> Path:
+        return self._key_path
+
+
+class RegKey(BaseRegKey):
 
     key_index = 0
 
     def __init__(
         self,
-        key_name: str,
-        key_muiv: str,
-        key_icon: str | None = None,
-        key_command: str | None = None,
-        parent: RegKey | None = None,
+        name: str,
+        pretty_name: str,
+        parent: BaseRegKey,
+        icon: Path | None = None,
+        command: str | None = None,
     ):
         r"""
         Utility to define the aspect of a windows registery key
@@ -25,159 +42,94 @@ class RegKey:
         If key_command is None the key is assumed to be the root for subkeys
 
         Args:
-            key_name: name of the key in the registery editor
-            key_muiv: pretty name to be displayed on the context menu
-            key_icon: path to the icons, think to escape \ to \\
-            key_command: command to register in the key
+            name: name of the key in the registery editor
+            pretty_name: pretty name to be displayed on the context menu
             parent: parent this key is the child of.
+            icon: path to the icons
+            command: command to register in the key
         """
         self.parent = parent
 
-        if parent:
-
-            RegKey.key_index += 1
-            self.key_name = f"{str(RegKey.key_index).zfill(3)}{key_name}"
-
-        else:
+        if isinstance(parent, RootRegKey):
 
             RegKey.key_index = 0
-            self.key_name = f"{key_name}"
+            self.key_name = f"{name}"
 
-        self.key_muiv = key_muiv
-        self.key_icon = key_icon
-        self.key_command = key_command
+        else:
 
-    def write(self, reg_str: str, key_path: str) -> str:
-        r"""
+            RegKey.key_index += 1
+            self.key_name = f"{str(RegKey.key_index).zfill(3)}{name}"
 
-        Args:
-            reg_str: string holding the current reg data and to add the keys data to
-            key_path: root path of the key in the registery editor
-                ex: HKEY_CLASSES_ROOT\SystemFileAssociations\.exr
+        self.key_muiv = pretty_name
+        self.icon_path = icon
+        self.key_command = command
+
+    def __str__(self) -> str:
         """
-        if self.parent:
+        Get the full key representation as a writable to disk string.
+        """
 
-            if self.parent.parent:
+        out_str = f"[{self.key_path}]\n"
 
-                key_end = r"{}\shell\{}\shell\{}".format(
-                    self.parent.parent.key_name, self.parent.key_name, self.key_name
-                )
+        out_str += f'"MUIVerb" = "{self.key_muiv}"\n'
+        if self.icon_path:
+            out_str += f'"icon" = "{repr(str(self.icon_path))[1:][:-1]}"\n'
 
-            else:
+        if self.key_command:
+            out_str += f'[{self.key_path / "command"}]\n'
+            out_str += f'@="{self.key_command}"\n'
 
-                key_end = r"{}\shell\{}".format(self.parent.key_name, self.key_name)
-
-        # Means this is a root key
-        else:
-
-            key_end = r"{}".format(self.key_name)
-
-        data_base = rf"""[{key_path}\shell\{key_end}]
-"MUIVerb" = "{self.key_muiv}" """
-
-        if self.key_icon:
-
-            data_base += rf"""
-"icon" = "{self.key_icon}" 
-            """
         # if no command it means the key is the root for subkeys
-        if not self.key_command:
-
-            data_base += rf"""
-"subCommands"=""
-"""
         else:
+            out_str += f'"subCommands"=""\n'
 
-            data_base += (
-                "\n"
-                + rf"""[{key_path}\shell\{key_end}\command]
-@="{self.key_command}"
-            """
-            )
+        return out_str
 
-        reg_str += data_base + "\n"
-        return reg_str
+    @property
+    def key_path(self) -> Path:
+        return self.parent.key_path / "shell" / self.key_name
 
 
-def create_reg(reg_file_path: Path, delete_keys: bool = False) -> str:
+class RegFile:
     """
-    Create the reg file at the given location
-
-    Args:
-        reg_file_path: path where the .reg file should be created
-        delete_keys: True to delete the keys instead of creating them (will add - in front of the keys in the reg file)
-
-    Returns:
-        path to the created reg file
-    """
-    if delete_keys:
-        keys_remove = "-"
-    else:
-        keys_remove = ""
-
-    """ //Variables for the reg file """
-    icon_logo_path01 = "./somepath/f.ico"
-    icon_logo_path02 = "./somepath/f.ico"
-
-    """ --------------------------------------------------------------------------------------------------------------
-    Create the keys
-
-    Key will appears in the context menu in the order you created them. It is recommanded to always create
-    the parent first then the child. 
+    A .reg file generated from scracth as a python object.
     """
 
-    # define the locations of all the key, in this exemple we are going to associate them to the exr file format
-    key_base_path = rf"{keys_remove}HKEY_CLASSES_ROOT\SystemFileAssociations\.exr"
+    def __init__(self):
+        self._comments_header: list[str] = []
+        self._reg_keys_list = []
 
-    # this is the string will all the keys that is going to be exectued at the end
-    reg_final_data = "Windows Registry Editor Version 5.00 \n"
+    def add_regkey(self, reg_key: RegKey):
+        self._reg_keys_list.append(reg_key)
 
-    # Create root Key
-    root_key_baguette = RegKey("Exemple_baguette", "Exemple Baguette", icon_logo_path01)
-    reg_final_data = root_key_baguette.write(reg_final_data, key_base_path)
+    def content(self) -> str:
 
-    # Create root Key 02
-    root_key_fromage = RegKey("Exemple_fromage", "Exemple Fromage", icon_logo_path02)
-    reg_final_data = root_key_fromage.write(reg_final_data, key_base_path)
+        content = ""
+        content += "Windows Registry Editor Version 5.00\n\n"
+        content += f"; File auto generated from regcreator python package v{regcreator.__version__}.\n"
+        for comment in self._comments_header:
+            content += f"; {comment}\n"
+        content += "\n"
 
-    # ------------------------------------------------------------------------------------------------------------------
-    # Create first keys
-    fromagebuy_key = RegKey(
-        "fromage_buy",
-        "Buy Fromage",
-        key_command=r"\"E:/app/app.exe\"  \"%1\" buy_fromage",
-        parent=root_key_fromage,
-    )
-    reg_final_data = fromagebuy_key.write(reg_final_data, key_base_path)
+        for reg_key in self._reg_keys_list:
+            content += str(reg_key) + "\n"
 
-    baguette01_key = RegKey("baguette_01", "Baguette 01", parent=root_key_baguette)
-    reg_final_data = baguette01_key.write(reg_final_data, key_base_path)
+        return content
 
-    # ------------------------------------------------------------------------------------------------------------------
-    # Create sub-keys
+    def insert_header_comment(self, comment: str):
+        """
+        Args:
+            comment: message to add as comment in the header of the file.
+        """
+        return self._comments_header.append(comment)
 
-    # Baguette sub-key
-    # ------------------------------------------------------------------------------------------------------------------
-    eat_baguette = RegKey(
-        "eat_baguette",
-        "Eat the baguette",
-        key_command=r"\"E:/app/app.exe\"  \"%1\" baguette_arg",
-        parent=baguette01_key,
-    )
-    reg_final_data = eat_baguette.write(reg_final_data, key_base_path)
+    def write_to(self, export_path: Path):
+        """
+        Args:
+            export_path: absolute path to a file to write on disk. Must include .reg extension.
+        """
+        logger.info(f"About to write <{export_path}> to disk ...")
+        export_path.write_text(self.content(), encoding="utf-8")
 
-    destroy_baguette = RegKey(
-        "destroy_baguette",
-        "Destroy the baguette",
-        key_command=r"\"E:/app/app.exe\"  \"%1\" baguette_destroy",
-        parent=baguette01_key,
-    )
-    reg_final_data = destroy_baguette.write(reg_final_data, key_base_path)
-
-    """ Write the .reg file"""
-
-    logger.info(f"writing {reg_file_path} ...")
-    reg_file_path.write_text(reg_final_data)
-
-    if not reg_file_path.exists():
-        raise RuntimeError(f"Reg File <{reg_file_path}> not created")
+        if not export_path.exists():
+            raise RuntimeError(f"Reg File <{export_path}> not created")
