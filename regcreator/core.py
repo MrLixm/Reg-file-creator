@@ -153,7 +153,6 @@ class RegFile:
         Args:
             export_path: absolute path to a file to write on disk. Must include .reg extension.
         """
-        logger.info(f"About to write <{export_path}> to disk ...")
         export_path.write_text(self.content(), encoding="utf-8")
 
         if not export_path.exists():
