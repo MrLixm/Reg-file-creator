@@ -44,10 +44,11 @@ python -m regcreator --help
 To read the reg structure from a json file and concert it to 2 reg files :
 
 ```shell
-python -m regcreator "/z/whatever/test_reading_01.json" "./test.reg"
+python -m regcreator "/z/whatever/test_reading_01.json"
 ```
 
-There is 2 reg files produced because one add the keys, and the other is to remove them.
+With the above command,tThere is 2 reg files produced next to the original json:
+one add the keys, and the other is to remove them.
 
 ## JSON structure
 
@@ -68,25 +69,24 @@ Then `children` represent a dict of regkeys, where each can also have children.
 {
   "path": "HKEY_CLASSES_ROOT\\SystemFileAssociations\\.exr",
   "children": {
-    "Example_baguette": {
-      "name": "Example Baguette",
+    "test_me": {
+      "name": "Test Me",
       "icon": "./somepath/icon.ico",
-      "children": {...}
+      "command": "cmd.exe /k echo I work !",
+      "children": {}
     }
   }
 }
 ```
 
-The key of each item in the `children` dict is the unique name to represent
-the regkey stored in the regitestry. Its value is a dict describing its configuration.
+The above json will produce a reg file that once executed will led to 
+add a new single context menu entry named "Test Me" when right-clicking an .exr file.
 
-All the keys available for the "value dict" are :
+You can create sub-menu entry, that are nested, using the `children` key.
 
-```json
-{
-  "name": "pretty name to display in the windows interface",
-  "icon": "path/to/an/icon",
-  "command": "command to use when entry is executed by user",
-  "children": {}
-}
-```
+Keys available are :
+
+- `name` (mandatory): pretty name to display in the windows interface
+- `icon` (optional): absolute file path to an icon image (.ico)
+- `command` (optional): command to execute when clicked. Can only be added if the RegKey doesn't have children.
+- `children` (optional): dict of sub-menu entries to add.
