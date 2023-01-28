@@ -51,8 +51,11 @@ def cli():
         type=str,
     )
     parser.add_argument(
-        "target_file",
-        help="Path to the reg file to write on disk. With the extension.",
+        "--target_file",
+        help=(
+            "Path to the reg file to write on disk. With the extension.\n"
+            "If not specified, the source_json_file will be used."
+        ),
         type=str,
     )
 
@@ -65,7 +68,11 @@ def cli():
     json_path = Path(parsed.source_json_file)
     if not json_path.suffix == ".json":
         raise TypeError(f"Expected .json file as source got {json_path}")
-    reg_path = Path(parsed.target_file).resolve().absolute()
+
+    reg_path = parsed.target_file
+    if not reg_path:
+        reg_path = json_path.with_suffix(".reg")
+    reg_path = Path(reg_path).resolve().absolute()
 
     regfile = regcreator.reading.regfile_from_json(json_path)
     regfile.insert_header_comment("Generated from:")
