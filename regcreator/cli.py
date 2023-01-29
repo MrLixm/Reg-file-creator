@@ -3,6 +3,7 @@ import logging
 import sys
 from pathlib import Path
 
+import regcreator.c
 import regcreator.reading
 
 
@@ -36,8 +37,11 @@ def cli():
     """
 
     parser = argparse.ArgumentParser(
-        prog=regcreator.__name__,
-        description="Create a Window reg file to edit registery keys.",
+        prog=regcreator.c.name,
+        description=(
+            "Create context-menu entries in Windows from a .json converted to .reg files.\n"
+            f"Source: {regcreator.c.vcs_repo}"
+        ),
     )
     parser.add_argument("--version", action="version", version=regcreator.__version__)
     parser.add_argument(
