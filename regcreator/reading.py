@@ -42,7 +42,9 @@ def get_regkeys(regkey_data: dict[str, dict], parent: BaseRegKey) -> list[RegKey
 
         icon = top_key_data.get("icon")
         if icon:
-            icon = Path(icon).resolve().absolute()
+            icon = os.path.expandvars(icon)
+            icon = icon.lstrip('"').rstrip('"')
+            icon = Path(icon).resolve()
 
         command = top_key_data.get("command")
 
