@@ -87,6 +87,7 @@ You can create sub-menu entry, that are nested, using the `children` key.
 Keys available are :
 
 - `name` (mandatory): pretty name to display in the windows interface
-- `icon` (optional): absolute file path to an icon image (.ico)
+- `icon` (optional): absolute or relative file path to an icon image (.ico). 
+If relative, the working directory will be the one of the json file.
 - `command` (optional): command to execute when clicked. Can only be added if the RegKey doesn't have children.
 - `children` (optional): dict of sub-menu entries to add.

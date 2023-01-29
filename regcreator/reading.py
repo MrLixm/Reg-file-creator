@@ -1,5 +1,7 @@
 import json
 import logging
+import os
+from contextlib import contextmanager
 from pathlib import Path
 
 from regcreator.core import BaseRegKey
@@ -8,6 +10,19 @@ from regcreator.core import RegFile
 from regcreator.core import RegRootKey
 
 logger = logging.getLogger(__name__)
+
+
+@contextmanager
+def edit_working_directory(new_cwd: Path):
+    """
+    Context to change the cwd to the given one and restore to the previous one once finished.
+    """
+    previous = Path.cwd()
+    os.chdir(new_cwd)
+    try:
+        yield
+    finally:
+        os.chdir(previous)
 
 
 def get_regkeys(regkey_data: dict[str, dict], parent: BaseRegKey) -> list[RegKey]:
@@ -27,7 +42,7 @@ def get_regkeys(regkey_data: dict[str, dict], parent: BaseRegKey) -> list[RegKey
 
         icon = top_key_data.get("icon")
         if icon:
-            icon = Path(icon)
+            icon = Path(icon).resolve().absolute()
 
         command = top_key_data.get("command")
 
@@ -63,11 +78,13 @@ def regfile_from_json(json_path: Path) -> RegFile:
 
     json_data = json.loads(json_path.read_text("utf-8"))
 
-    root_regkey = RegRootKey(Path(json_data["path"]))
-    regkeys = get_regkeys(json_data["children"], parent=root_regkey)
+    with edit_working_directory(json_path.parent):
 
-    regfile = RegFile()
-    for regkey in regkeys:
-        regfile.add_regkey(regkey)
+        root_regkey = RegRootKey(Path(json_data["path"]))
+        regkeys = get_regkeys(json_data["children"], parent=root_regkey)
+
+        regfile = RegFile()
+        for regkey in regkeys:
+            regfile.add_regkey(regkey)
 
     return regfile
