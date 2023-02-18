@@ -1,0 +1,40 @@
+{
+  "path": [
+    "HKEY_CLASSES_ROOT\\SystemFileAssociations\\.exr",
+    "HKEY_CLASSES_ROOT\\SystemFileAssociations\\.jpg"
+  ],
+  "children": {
+    "Exemple_baguette": {
+      "name": "Exemple Baguette",
+      "icon": "./somepath/f.ico",
+      "children": {
+        "baguette_01": {
+          "name": "Baguette 01",
+          "children": {
+            "eat_baguette": {
+              "name": "Eat the baguette",
+              "command": "\\\"E:/app/app.exe\\\"  \\\"%1\\\" baguette_arg",
+              "children": {}
+            },
+            "destroy_baguette": {
+              "name": "Destroy the baguette",
+              "command": "\\\"E:/app/app.exe\\\"  \\\"%1\\\" baguette_destroy",
+              "children": {}
+            }
+          }
+        }
+      }
+    },
+    "Exemple_fromage": {
+      "name": "Exemple Fromage",
+      "icon": "./somepath/f.ico",
+      "children": {
+        "fromage_buy": {
+          "name": "Buy Fromage",
+          "command": "\\\"E:/app/app.exe\\\"  \\\"%1\\\" buy_fromage",
+          "children": {}
+        }
+      }
+    }
+  }
+}

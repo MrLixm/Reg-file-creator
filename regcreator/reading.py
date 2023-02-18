@@ -82,11 +82,22 @@ def regfile_from_json(json_path: Path) -> RegFile:
 
     with edit_working_directory(json_path.parent):
 
-        root_regkey = RegRootKey(Path(json_data["path"]))
-        regkeys = get_regkeys(json_data["children"], parent=root_regkey)
+        json_key_path = json_data["path"]
+        json_key_children = json_data["children"]
 
-        regfile = RegFile()
-        for regkey in regkeys:
-            regfile.add_regkey(regkey)
+        if isinstance(json_key_path, str):
+            rootkey_list = [RegRootKey(Path(json_key_path))]
+
+        else:
+            rootkey_list = [RegRootKey(Path(key_path)) for key_path in json_key_path]
+
+        regkeys = []
+
+        for rootkey in rootkey_list:
+            regkeys.extend(get_regkeys(json_key_children, parent=rootkey))
+
+    regfile = RegFile()
+    for regkey in regkeys:
+        regfile.add_regkey(regkey)
 
     return regfile
