@@ -1,0 +1,50 @@
+{
+  "path": [
+    "HKEY_CLASSES_ROOT\\SystemFileAssociations\\.exr",
+    "HKEY_CLASSES_ROOT\\SystemFileAssociations\\.jpg"
+  ],
+  "variables": {
+    "paths": {
+      "appPath": "E:/app/app.exe",
+      "relativeAppPath": "./imrelative.exe",
+      "mainIcon": "../relativeicon/icon.ico"
+    },
+    "strings": {
+      "baguetteName": " \\\"flute tradition\\\""
+    }
+  },
+  "children": {
+    "Exemple_baguette": {
+      "name": "Exemple Baguette",
+      "icon": "@mainIcon",
+      "children": {
+        "baguette_01": {
+          "name": "Baguette 01",
+          "children": {
+            "eat_baguette": {
+              "name": "Eat the baguette",
+              "command": "\\\"@appPath\\\"  \\\"%1\\\" @baguetteName",
+              "children": {}
+            },
+            "destroy_baguette": {
+              "name": "Destroy the baguette",
+              "command": "\\\"@appPath\\\"  \\\"%1\\\" @baguetteName",
+              "children": {}
+            }
+          }
+        }
+      }
+    },
+    "Exemple_fromage": {
+      "name": "Exemple Fromage",
+      "icon": "@mainIcon",
+      "children": {
+        "fromage_buy": {
+          "name": "Buy Fromage",
+          "command": "\\\"@appPath\\\"  \\\"%1\\\" buy_fromage",
+          "children": {}
+        }
+      }
+    }
+  }
+}

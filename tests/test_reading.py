@@ -8,6 +8,12 @@ logger = logging.getLogger(__name__)
 
 DATA_01 = Path(__file__).parent / "data" / "test_reading_01.json"
 DATA_02 = Path(__file__).parent / "data" / "test_reading_02.json"
+DATA_03 = Path(__file__).parent / "data" / "test_reading_03.json"
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="[%(levelname)-7s] %(asctime)s [%(name)s]%(message)s",
+)
 
 
 class Test_regfile_from_json(unittest.TestCase):
@@ -19,10 +25,11 @@ class Test_regfile_from_json(unittest.TestCase):
         regfile = regcreator.reading.regfile_from_json(json_path=DATA_02)
         print(regfile.content())
 
+    def test_data03(self):
+        regfile = regcreator.reading.regfile_from_json(json_path=DATA_03)
+        print(regfile.content())
+
 
 if __name__ == "__main__":
-    logging.basicConfig(
-        level=logging.DEBUG,
-        format="[%(levelname)-7s] %(asctime)s [%(name)s]%(message)s",
-    )
-    unittest.main()
+
+    unittest.main(verbosity=2)
