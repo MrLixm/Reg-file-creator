@@ -1,3 +1,10 @@
+# reg-file-creator (DEPRECATED)
+
+> [!CAUTION]
+> This package is deprecated in favor of https://github.com/MrLixm/frmb which is a much more simple and convenient approach to this problem.
+
+---
+
 Python package to create context-menu entries in Windows by using .reg files.
 
 Usable as a regular python package or as CLI with a .json input like below :
